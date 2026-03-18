@@ -25,30 +25,30 @@ int main()
             graph[v].push_back(u);
         }
         
-        vector<int> col(n+1, -1), cnt(2, 0);
+        bool ok = true;
+        vector<int> dist(n+1, -1), cnt(2, 0);
         
-        function<bool(int, int)> DFS = [&] (int u, int color) {
-            if(col[u] == -1) {
-                cnt[color]++;
-                col[u] = color;
+        function<void(int, int, int)> DFS = [&] (int u, int prev, int d) {
+            if(dist[u] == -1) {
+                cnt[d&1]++;
+                dist[u] = d;
                 for(auto v : graph[u]) {
-                    if(DFS(v, color ^ 1));
-                    else
-                        return false;
+                    DFS(v, u, d + 1);
                 }
-                return true;
             }
-            else {
-                return (col[u] == color);
+            else if(abs(dist[u] - dist[prev]) % 2 == 0) {
+                ok = false;
             }
         };
         
         int ans = 0;
         for(int i = 1; i <= n; i++) {
-            if(col[i] == -1) {
+            if(dist[i] == -1) {
                 cnt[0] = cnt[1] = 0;
-                if(DFS(i, 0))
+                DFS(i, i, 0);
+                if(ok)
                     ans += max(cnt[0], cnt[1]);
+                ok = true;
             }
         }
         
